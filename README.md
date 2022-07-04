@@ -14,9 +14,8 @@
 
 #### 安装教程
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
++ make编译
++ 最少三台机器部署
 
 #### 使用说明
 
@@ -24,17 +23,11 @@
 2.  xxxx
 3.  xxxx
 
-#### 参与贡献
-
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
 
 #### Test
-go run main.go -config etc/health-check.ini
-go run main.go -config etc/health-check2.ini
-go run main.go -config etc/health-check3.ini
++ go run main.go -config etc/health-check.ini
++ go run main.go -config etc/health-check2.ini
++ go run main.go -config etc/health-check3.ini
 
 #### 特技
 
