@@ -6,9 +6,9 @@ require (
 	github.com/armon/go-metrics v0.3.10 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/gin-gonic/gin v1.7.7
-	github.com/go-ini/ini v1.66.6 // indirect
+	github.com/go-ini/ini v1.66.6
 	github.com/go-playground/validator/v10 v10.10.1 // indirect
-	github.com/gogf/gf v1.16.9 // indirect
+	github.com/gogf/gf v1.16.9
 	github.com/gogf/mysql v1.6.1-0.20210603073548-16164ae25579 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
