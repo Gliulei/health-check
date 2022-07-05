@@ -2,8 +2,11 @@ package prober
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"github.com/hashicorp/raft"
 	"health-check/library/errors"
+	"io"
 )
 
 var Manager = manager{
@@ -23,6 +26,26 @@ func (m *manager) Init() {
 		g.Cancel = cancel
 		go g.Run(ctx)
 	}
+}
+
+func (m *manager) Persist(sink raft.SnapshotSink) error {
+	data, err := json.Marshal(m.groups)
+	if err != nil {
+		return err
+	}
+	sink.Write(data)
+	sink.Close()
+	return nil
+}
+
+func (m *manager) Release() {}
+
+func (m *manager) Restore(reader io.ReadCloser) error {
+	if err := json.NewDecoder(reader).Decode(&m.groups); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (m *manager) AddInstance(groupName string, ip string, port int, probeType string, url string) error {

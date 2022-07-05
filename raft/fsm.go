@@ -58,11 +58,12 @@ func (f *Fsm) Apply(l *raft.Log) interface{} {
 }
 
 func (f *Fsm) Snapshot() (raft.FSMSnapshot, error) {
-	return &f.DataBase, nil
+	return &prober.Manager, nil
+	//return &f.DataBase, nil
 }
 
-func (f *Fsm) Restore(io.ReadCloser) error {
-	return nil
+func (f *Fsm) Restore(reader io.ReadCloser) error {
+	return prober.Manager.Restore(reader)
 }
 
 type database struct {
