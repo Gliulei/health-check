@@ -14,18 +14,29 @@ type manager struct {
 	groups map[string]Group
 }
 
+func (m *manager) Init() {
+	for _, g := range m.groups {
+		if g.Running {
+			continue
+		}
+		ctx, cancel := context.WithCancel(context.Background())
+		g.Cancel = cancel
+		go g.Run(ctx)
+	}
+}
+
 func (m *manager) AddInstance(groupName string, ip string, port int, probeType string, url string) error {
 	addr := fmt.Sprintf("%s:%d", ip, port)
 	g, ok := m.groups[groupName]
 
 	var isNeedCreate bool
 	if ok {
-		_, ok := g.instances[addr]
+		_, ok := g.Instances[addr]
 		if ok {
 			return errors.ErrInstanceHasExists
 		}
-		g.cancel()
-		<-g.done
+		g.Cancel()
+		<-g.Done
 	} else {
 		isNeedCreate = true
 	}
@@ -37,7 +48,7 @@ func (m *manager) AddInstance(groupName string, ip string, port int, probeType s
 	}
 
 	//again install cancel
-	g.cancel = cancel
+	g.Cancel = cancel
 
 	//add instance
 	g.AddInstance(ip, port)
@@ -60,7 +71,7 @@ func (m *manager) RemoveInstance(groupName string, ip string, port int) error {
 func (m *manager) GetInstance(groupName string) (map[string]instance, error) {
 	g, ok := m.groups[groupName]
 	if ok {
-		return g.instances, nil
+		return g.Instances, nil
 	}
 
 	return nil, errors.ErrInstanceHasExists
@@ -70,10 +81,10 @@ func (m *manager) GetInstanceOne(groupName string) ([]map[string]interface{}, er
 	g, ok := m.groups[groupName]
 	if ok {
 		var data []map[string]interface{}
-		for _, val := range g.instances {
+		for _, val := range g.Instances {
 			tmp := map[string]interface{}{
-				"ip":   val.ip,
-				"port": val.port,
+				"ip":   val.Ip,
+				"port": val.Port,
 			}
 			data = append(data, tmp)
 		}

@@ -47,7 +47,7 @@ func (f *Fsm) Apply(l *raft.Log) interface{} {
 		}
 		break
 	case "remove":
-		err := prober.Manager.RemoveInstance(g.GroupName, g.Addr, g.Port)
+		err := prober.Manager.RemoveInstance(g.GroupName, g.Ip, g.Port)
 		if err != nil {
 			return err
 		}
