@@ -21,10 +21,18 @@ type manager struct {
 func (m *manager) Persist(sink raft.SnapshotSink) error {
 	data, err := json.Marshal(m.groups)
 	if err != nil {
+		sink.Cancel()
 		return err
 	}
-	sink.Write(data)
-	sink.Close()
+	if _, err = sink.Write(data); err != nil {
+		sink.Cancel()
+		return err
+	}
+
+	if err = sink.Close(); err != nil {
+		sink.Cancel()
+		return err
+	}
 	return nil
 }
 
@@ -35,7 +43,7 @@ func (m *manager) Restore(reader io.ReadCloser) error {
 		return err
 	}
 
-	for _, g:= range m.groups {
+	for _, g := range m.groups {
 		if g.running {
 			log.Warn("group %s is running ...", g.Name)
 			continue
