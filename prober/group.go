@@ -24,23 +24,22 @@ type Group struct {
 	Instances     map[string]instance
 	FailInstances map[string]struct{}
 
-	Cancel context.CancelFunc
+	cancel context.CancelFunc
 
 	ProbeType string
 
-	Probe probe.Probe
+	probe probe.Probe
 
 	Timeout time.Duration //超时时间
 
-	Done chan struct{}
+	done chan struct{}
 
 	Url string //http 接口
 
 	UserAuth string //认证用户
 	PassAuth string //认证密码
 
-	Running bool
-
+	running bool
 }
 
 type instance struct {
@@ -52,22 +51,33 @@ type instance struct {
 	OnFailHttpUrl    string
 }
 
-func NewGroup(name string, probeType string, url string, cancel context.CancelFunc) Group {
+func NewGroup(name string, probeType string, url string, cancel context.CancelFunc) *Group {
 	g := Group{
 		Name:          name,
 		Url:           url,
-		Cancel:        cancel,
+		cancel:        cancel,
 		Instances:     make(map[string]instance, 0),
 		FailInstances: make(map[string]struct{}, 0),
-		Done:          make(chan struct{}, 1),
+		done:          make(chan struct{}, 1),
 	}
 	if probeType == HttpProbe {
-		g.Probe = httpProbe.New()
+		g.probe = httpProbe.New()
 	} else {
-		g.Probe = tcpProbe.New()
+		g.probe = tcpProbe.New()
 	}
 
-	return g
+	return &g
+}
+
+func (g *Group) InitGroup(cancelFunc context.CancelFunc) {
+	g.cancel = cancelFunc
+	g.done = make(chan struct{}, 1)
+	if g.ProbeType == HttpProbe {
+		g.probe = httpProbe.New()
+	} else {
+		g.probe = tcpProbe.New()
+	}
+
 }
 
 func (g *Group) AddInstance(ip string, port int) error {
@@ -86,20 +96,21 @@ func (g *Group) AddInstance(ip string, port int) error {
 func (g *Group) RemoveInstance(ip string, port int) error {
 	addr := fmt.Sprintf("%s:%d", ip, port)
 	delete(g.Instances, addr)
+	delete(g.FailInstances, addr)
 
 	return nil
 }
 
 func (g *Group) Run(ctx context.Context) {
-	g.Running = true
+	g.running = true
 	ticker := time.NewTicker(time.Second * 5)
 	defer ticker.Stop()
 	for {
 		select {
 		case <-ctx.Done():
-			log.Warn("group %s is ended", g.Name)
-			g.Running = false
-			g.Done <- struct{}{}
+			log.Warn("group %s is be cancelled", g.Name)
+			g.running = false
+			g.done <- struct{}{}
 			return
 		case <-ticker.C:
 			//not leader skip
@@ -108,11 +119,11 @@ func (g *Group) Run(ctx context.Context) {
 			}
 			for addr, instance := range g.Instances {
 				log.Notice("leader addr is %s start probe %s", config.Cfg.Raft.Addr, instance.Url)
-				err := g.Probe.Ping(instance.Url, g.Timeout)
+				err := g.probe.Ping(instance.Url, g.Timeout)
 
 				repeat := 3
 				for repeat > 0 && err != nil {
-					err = g.Probe.Ping(instance.Url, g.Timeout)
+					err = g.probe.Ping(instance.Url, g.Timeout)
 					repeat--
 				}
 

@@ -6,26 +6,16 @@ import (
 	"fmt"
 	"github.com/hashicorp/raft"
 	"health-check/library/errors"
+	"health-check/log"
 	"io"
 )
 
 var Manager = manager{
-	groups: make(map[string]Group, 0),
+	groups: make(map[string]*Group, 0),
 }
 
 type manager struct {
-	groups map[string]Group
-}
-
-func (m *manager) Init() {
-	for _, g := range m.groups {
-		if g.Running {
-			continue
-		}
-		ctx, cancel := context.WithCancel(context.Background())
-		g.Cancel = cancel
-		go g.Run(ctx)
-	}
+	groups map[string]*Group
 }
 
 func (m *manager) Persist(sink raft.SnapshotSink) error {
@@ -45,6 +35,18 @@ func (m *manager) Restore(reader io.ReadCloser) error {
 		return err
 	}
 
+	for _, g:= range m.groups {
+		if g.running {
+			log.Warn("group %s is running ...", g.Name)
+			continue
+		}
+
+		ctx, cancel := context.WithCancel(context.Background())
+		g.InitGroup(cancel)
+		go g.Run(ctx)
+		log.Notice("group %s restore running success", g.Name)
+	}
+
 	return nil
 }
 
@@ -58,8 +60,8 @@ func (m *manager) AddInstance(groupName string, ip string, port int, probeType s
 		if ok {
 			return errors.ErrInstanceHasExists
 		}
-		g.Cancel()
-		<-g.Done
+		g.cancel()
+		<-g.done
 	} else {
 		isNeedCreate = true
 	}
@@ -71,7 +73,7 @@ func (m *manager) AddInstance(groupName string, ip string, port int, probeType s
 	}
 
 	//again install cancel
-	g.Cancel = cancel
+	g.cancel = cancel
 
 	//add instance
 	g.AddInstance(ip, port)
