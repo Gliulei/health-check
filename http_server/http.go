@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/raft"
 	"health-check/library"
 	"health-check/library/global"
+	"health-check/library/utils"
 	"health-check/prober"
 	craft "health-check/raft"
 	"time"
@@ -38,7 +39,8 @@ func (s *HttpServer) registerURL() {
 
 func (s *HttpServer) Add(c *gin.Context) {
 	if s.raft.State() != raft.Leader {
-		global.OkWithMessage(c, "not leader")
+		addr ,_ := s.raft.LeaderWithID()
+		utils.NewHttpProxy(string(addr)).Request(c.Writer, c.Request)
 		return
 	}
 	var g library.GroupForm
@@ -62,7 +64,8 @@ func (s *HttpServer) Add(c *gin.Context) {
 
 func (s *HttpServer) Remove(c *gin.Context) {
 	if s.raft.State() != raft.Leader {
-		global.OkWithMessage(c, "not leader")
+		addr ,_ := s.raft.LeaderWithID()
+		utils.NewHttpProxy(string(addr)).Request(c.Writer, c.Request)
 		return
 	}
 	var g library.GroupForm
