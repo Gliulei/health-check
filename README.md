@@ -9,7 +9,7 @@
 5. 对外提供http接口
 
 #### 软件架构
-软件架构
+
 ![架构图](./docs/assets/health-check.png)
 
 #### 安装教程
