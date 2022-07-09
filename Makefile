@@ -10,5 +10,8 @@ build: health-check
 health-check:
 	go build -o $(BIN_OUT) main.go
 
+linux_amd64_build:
+	git pull && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $(BIN_OUT) main.go
+
 clean:
 	@rm -rf bin
