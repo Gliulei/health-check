@@ -29,5 +29,5 @@
 + go run main.go -config etc/health-check2.ini
 + go run main.go -config etc/health-check3.ini
 
-#### Author
+#### 联系Author
 email:liulei4567@qq.com
