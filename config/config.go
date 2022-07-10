@@ -8,6 +8,8 @@ import (
 var Cfg *Config
 
 type Config struct {
+	AuthUser      string `ini:"auth_user"`
+	AuthPassword  string `ini:"auth_password"`
 	OnRecoverHttpUrl string `ini:"on_recover_http_url"`
 	OnFailHttpUrl    string `ini:"on_fail_http_url"`
 	HttpAddr         string `ini:"http_addr"`

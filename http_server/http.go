@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/hashicorp/raft"
+	"health-check/config"
 	"health-check/library"
 	"health-check/library/global"
 	"health-check/library/utils"
@@ -32,7 +33,7 @@ func New(raft *raft.Raft, fsm *craft.Fsm) *HttpServer {
 }
 
 func (s *HttpServer) registerURL() {
-	group := s.Engine.Group("api/instance")
+	group := s.Engine.Group("api/instance", gin.BasicAuth(gin.Accounts{config.Cfg.AuthUser: config.Cfg.AuthPassword}))
 	group.POST("add", s.Add)
 	group.DELETE("remove", s.Remove)
 	group.GET("lists", s.GetList)
