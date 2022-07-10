@@ -6,6 +6,10 @@ on_recover_http_url = ""
 on_fail_http_url = ""
 ;http监听地址，端口必须为raft.addr+1
 http_addr="127.0.0.1:7001"
+;api接口认证user
+auth_user = "master"
+;api接口认证passwd
+auth_password = "master"
 
 ;raft配置
 [raft]
