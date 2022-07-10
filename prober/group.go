@@ -18,6 +18,7 @@ const (
 	TcpProbe  = "tcp"
 	HttpProbe = "http"
 )
+const timeout = 3 * time.Second
 
 type Group struct {
 	Name          string
@@ -56,6 +57,7 @@ func NewGroup(name string, probeType string, url string, cancel context.CancelFu
 		Name:          name,
 		ProbeUrl:      url,
 		cancel:        cancel,
+		Timeout:       timeout,
 		Instances:     make(map[string]instance, 0),
 		FailInstances: make(map[string]struct{}, 0),
 		done:          make(chan struct{}, 1),
@@ -88,7 +90,14 @@ func (g *Group) AddInstance(ip string, port int) error {
 	} else {
 		probeAddr = addr
 	}
-	g.Instances[addr] = instance{Ip: ip, Port: port, ProbeAddr: probeAddr, Status: probe.Success}
+	g.Instances[addr] = instance{
+		Ip:               ip,
+		Port:             port,
+		ProbeAddr:        probeAddr,
+		Status:           probe.Success,
+		OnRecoverHttpUrl: config.Cfg.OnRecoverHttpUrl,
+		OnFailHttpUrl:    config.Cfg.OnFailHttpUrl,
+	}
 
 	return nil
 }
