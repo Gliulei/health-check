@@ -6,5 +6,5 @@ type GroupForm struct {
 	Port      int    `form:"port" json:"port" binding:"required"`
 	Addr      string `form:"addr" json:"addr" binding:"required"`
 	ProbeType string `form:"probe_type" json:"probe_type" binding:"required"`
-	Url       string `form:"url" json:"url"`
+	ProbeUrl       string `form:"url" json:"probe_url"`
 }

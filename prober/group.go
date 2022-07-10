@@ -34,7 +34,7 @@ type Group struct {
 
 	done chan struct{}
 
-	Url string //http 接口
+	ProbeUrl string //http 接口
 
 	UserAuth string //认证用户
 	PassAuth string //认证密码
@@ -46,7 +46,7 @@ type instance struct {
 	Ip               string
 	Port             int
 	Status           probe.Result
-	Url              string
+	ProbeAddr        string
 	OnRecoverHttpUrl string
 	OnFailHttpUrl    string
 }
@@ -54,7 +54,7 @@ type instance struct {
 func NewGroup(name string, probeType string, url string, cancel context.CancelFunc) *Group {
 	g := Group{
 		Name:          name,
-		Url:           url,
+		ProbeUrl:      url,
 		cancel:        cancel,
 		Instances:     make(map[string]instance, 0),
 		FailInstances: make(map[string]struct{}, 0),
@@ -81,14 +81,14 @@ func (g *Group) InitGroup(cancelFunc context.CancelFunc) {
 }
 
 func (g *Group) AddInstance(ip string, port int) error {
-	var url string
+	var probeAddr string
 	addr := fmt.Sprintf("%s:%d", ip, port)
 	if g.ProbeType == HttpProbe {
-		url = g.Url
+		probeAddr = g.ProbeUrl
 	} else {
-		url = addr
+		probeAddr = addr
 	}
-	g.Instances[addr] = instance{Ip: ip, Port: port, Url: url, Status: probe.Success}
+	g.Instances[addr] = instance{Ip: ip, Port: port, ProbeAddr: probeAddr, Status: probe.Success}
 
 	return nil
 }
@@ -118,17 +118,17 @@ func (g *Group) Run(ctx context.Context) {
 				continue
 			}
 			for addr, instance := range g.Instances {
-				log.Notice("leader addr is %s start probe %s", config.Cfg.Raft.Addr, instance.Url)
-				err := g.probe.Ping(instance.Url, g.Timeout)
+				log.Notice("leader addr is %s start probe %s", config.Cfg.Raft.Addr, instance.ProbeAddr)
+				err := g.probe.Ping(instance.ProbeAddr, g.Timeout)
 
 				repeat := 3
 				for repeat > 0 && err != nil {
-					err = g.probe.Ping(instance.Url, g.Timeout)
+					err = g.probe.Ping(instance.ProbeAddr, g.Timeout)
 					repeat--
 				}
 
 				if err != nil {
-					log.Warn("leader addr is %s probe fail %s", config.Cfg.Raft.Addr, instance.Url)
+					log.Warn("leader addr is %s probe fail %s", config.Cfg.Raft.Addr, instance.ProbeAddr)
 					if instance.Status == probe.Success {
 						instance.Status = probe.Failure
 						g.FailInstances[addr] = struct{}{}
@@ -146,7 +146,7 @@ func (g *Group) Run(ctx context.Context) {
 						//instance.Notice(err)
 					}
 				} else {
-					log.Notice("leader addr is %s probe success %s", config.Cfg.Raft.Addr, instance.Url)
+					log.Notice("leader addr is %s probe success %s", config.Cfg.Raft.Addr, instance.ProbeAddr)
 					if instance.Status == probe.Failure {
 						instance.Status = probe.Success
 						//实例正常之后要从failInstances里删除

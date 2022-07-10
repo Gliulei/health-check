@@ -19,9 +19,9 @@
 
 #### 使用说明
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+1.  [health-check的HTTP接口文档](./docs/api.md)
+2.  [health-check配置说明](./docs/configuration.md)
+
 
 
 #### Test
@@ -29,6 +29,5 @@
 + go run main.go -config etc/health-check2.ini
 + go run main.go -config etc/health-check3.ini
 
-#### 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
+#### Author
+email:liulei4567@qq.com

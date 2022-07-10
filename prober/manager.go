@@ -58,7 +58,7 @@ func (m *manager) Restore(reader io.ReadCloser) error {
 	return nil
 }
 
-func (m *manager) AddInstance(groupName string, ip string, port int, probeType string, url string) error {
+func (m *manager) AddInstance(groupName string, ip string, port int, probeType string, probeUrl string) error {
 	addr := fmt.Sprintf("%s:%d", ip, port)
 	g, ok := m.groups[groupName]
 
@@ -76,7 +76,7 @@ func (m *manager) AddInstance(groupName string, ip string, port int, probeType s
 
 	ctx, cancel := context.WithCancel(context.Background())
 	if isNeedCreate {
-		g = NewGroup(groupName, probeType, url, cancel)
+		g = NewGroup(groupName, probeType, probeUrl, cancel)
 		m.groups[groupName] = g
 	}
 

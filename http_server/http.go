@@ -32,14 +32,15 @@ func New(raft *raft.Raft, fsm *craft.Fsm) *HttpServer {
 }
 
 func (s *HttpServer) registerURL() {
-	s.Engine.POST("/add", s.Add)
-	s.Engine.DELETE("/remove", s.Remove)
-	s.Engine.GET("/lists", s.GetList)
+	group := s.Engine.Group("api/instance")
+	group.POST("add", s.Add)
+	group.DELETE("remove", s.Remove)
+	group.GET("lists", s.GetList)
 }
 
 func (s *HttpServer) Add(c *gin.Context) {
 	if s.raft.State() != raft.Leader {
-		addr ,_ := s.raft.LeaderWithID()
+		addr, _ := s.raft.LeaderWithID()
 		utils.NewHttpProxy(string(addr)).Request(c.Writer, c.Request)
 		return
 	}
@@ -64,7 +65,7 @@ func (s *HttpServer) Add(c *gin.Context) {
 
 func (s *HttpServer) Remove(c *gin.Context) {
 	if s.raft.State() != raft.Leader {
-		addr ,_ := s.raft.LeaderWithID()
+		addr, _ := s.raft.LeaderWithID()
 		utils.NewHttpProxy(string(addr)).Request(c.Writer, c.Request)
 		return
 	}

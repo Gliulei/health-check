@@ -41,7 +41,7 @@ func (f *Fsm) Apply(l *raft.Log) interface{} {
 
 	switch c.Op {
 	case "add":
-		err := prober.Manager.AddInstance(g.GroupName, g.Ip, g.Port, g.ProbeType, g.Url)
+		err := prober.Manager.AddInstance(g.GroupName, g.Ip, g.Port, g.ProbeType, g.ProbeUrl)
 		if err != nil {
 			return err
 		}
